@@ -1,0 +1,3 @@
+[submodule "Libraries/glm"]
+	path = Libraries/glm
+	url = git@github.com:MineBill/glm.git
