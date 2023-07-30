@@ -2,6 +2,27 @@
 #include "Logger.h"
 #include <vulkan/vk_enum_string_helper.h>
 
+void Sierpinski(
+        std::vector<Model::Vertex> &vertices,
+        int depth,
+        glm::vec2 left,
+        glm::vec2 right,
+        glm::vec2 top)
+{
+    if (depth <= 0) {
+        vertices.push_back({top});
+        vertices.push_back({left});
+        vertices.push_back({right});
+    } else {
+        auto leftTop = 0.5f * (left + top);
+        auto rightTop = 0.5f * (right + top);
+        auto leftRight = 0.5f * (left + right);
+        Sierpinski(vertices, depth - 1, left, leftRight, leftTop);
+        Sierpinski(vertices, depth - 1, leftRight, right, rightTop);
+        Sierpinski(vertices, depth - 1, leftTop, rightTop, top);
+    }
+}
+
 void Application::Initialize()
 {
     auto config = PipelineConfigInfo::Default(m_Window.Width(), m_Window.Height());
@@ -9,6 +30,10 @@ void Application::Initialize()
     m_pipelineLayout = config.Layout;
     config.RenderPass = m_swapchain.RenderPass();
     m_pipeline = std::make_unique<Pipeline>(m_device, config);
+
+    std::vector<Model::Vertex> vertices;//{{{0.0f, -0.5}}, {{0.5f, 0.5f}}, {{-0.5f, 0.5f}}};
+    Sierpinski(vertices, 8, {0.0f, -0.5f}, {0.5f, 0.5f}, {-0.5f, 0.5f});
+    m_model = std::make_unique<Model>(m_device, vertices);
     CreateCommandBuffers();
 }
 
@@ -103,7 +128,10 @@ void Application::CreateCommandBuffers()
         vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
         m_pipeline->BindCommandBuffer(m_commandBuffers[i]);
 
-        vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+        m_model->Bind(m_commandBuffers[i]);
+        m_model->Draw(m_commandBuffers[i]);
+
+        // vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
         vkCmdEndRenderPass(m_commandBuffers[i]);
 
         result = vkEndCommandBuffer(m_commandBuffers[i]);

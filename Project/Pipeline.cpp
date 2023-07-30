@@ -1,9 +1,11 @@
 #include "Pipeline.h"
 #include "Logger.h"
+#include "Model.h"
 #include <fstream>
 #include <vulkan/vk_enum_string_helper.h>
 
-PipelineConfigInfo PipelineConfigInfo::Default(u32 width, u32 height) {
+PipelineConfigInfo PipelineConfigInfo::Default(u32 width, u32 height)
+{
     PipelineConfigInfo pipelineConfigInfo{
             .InputAssemblyInfo = VkPipelineInputAssemblyStateCreateInfo{
                     .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -76,7 +78,8 @@ PipelineConfigInfo PipelineConfigInfo::Default(u32 width, u32 height) {
 }
 
 
-Pipeline::Pipeline(Device &device, PipelineConfigInfo config) : m_device(device) {
+Pipeline::Pipeline(Device &device, PipelineConfigInfo config) : m_device(device)
+{
     auto vertCode = LoadShaderByteCode("Assets/Shaders/Builtin.Object.vert.spv");
     auto fragCode = LoadShaderByteCode("Assets/Shaders/Builtin.Object.frag.spv");
 
@@ -99,20 +102,24 @@ Pipeline::Pipeline(Device &device, PipelineConfigInfo config) : m_device(device)
 
     VkPipelineShaderStageCreateInfo stages[] = {vertStageInfo, fragStageInfo};
 
+    auto bindingDescriptions = Model::Vertex::BindingDescription();
+    auto attributeDescriptions = Model::Vertex::AttributeDescription();
+
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-            .vertexBindingDescriptionCount = 0,
-            .vertexAttributeDescriptionCount = 0,
-    }
-    ;
-   VkPipelineViewportStateCreateInfo viewportStateCreateInfo {
+            .vertexBindingDescriptionCount = static_cast<u32>(bindingDescriptions.size()),
+            .pVertexBindingDescriptions = bindingDescriptions.data(),
+            .vertexAttributeDescriptionCount = static_cast<u32>(attributeDescriptions.size()),
+            .pVertexAttributeDescriptions = attributeDescriptions.data(),
+    };
+
+    VkPipelineViewportStateCreateInfo viewportStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .viewportCount = 1,
             .pViewports = &config.Viewport,
             .scissorCount = 1,
             .pScissors = &config.Scissor,
     };
-
 
     VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo{
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
@@ -144,13 +151,15 @@ Pipeline::Pipeline(Device &device, PipelineConfigInfo config) : m_device(device)
     INFO("Successfully created graphics pipeline");
 }
 
-Pipeline::~Pipeline() {
+Pipeline::~Pipeline()
+{
     vkDestroyShaderModule(m_device.LogicalDevice(), m_vertexModule, nullptr);
     vkDestroyShaderModule(m_device.LogicalDevice(), m_fragmentModule, nullptr);
     vkDestroyPipeline(m_device.LogicalDevice(), m_pipelineHandle, nullptr);
 }
 
-std::vector<char> Pipeline::LoadShaderByteCode(const char *filePath) {
+std::vector<char> Pipeline::LoadShaderByteCode(const char *filePath)
+{
     std::ifstream file(filePath, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         ERRORF("Failed to open file '{}'", filePath);
@@ -167,7 +176,8 @@ std::vector<char> Pipeline::LoadShaderByteCode(const char *filePath) {
     return byteCode;
 }
 
-VkShaderModule Pipeline::CreateShaderModule(const std::vector<char> &byteCode) {
+VkShaderModule Pipeline::CreateShaderModule(const std::vector<char> &byteCode)
+{
     INFO("Creating shader module");
     VkShaderModuleCreateInfo info{
             .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -184,6 +194,7 @@ VkShaderModule Pipeline::CreateShaderModule(const std::vector<char> &byteCode) {
     return module;
 }
 
-void Pipeline::BindCommandBuffer(VkCommandBuffer commandBuffer) {
+void Pipeline::BindCommandBuffer(VkCommandBuffer commandBuffer)
+{
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineHandle);
 }

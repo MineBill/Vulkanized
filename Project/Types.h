@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <memory>
 
 using u8  = uint8_t;
 using u16 = uint16_t;
@@ -13,3 +14,9 @@ using i64 = int64_t;
 
 using f32 = float;
 using f64 = double;
+
+template<typename T>
+using Ptr = std::unique_ptr<T>;
+
+template<typename T>
+using Ref = std::shared_ptr<T>;

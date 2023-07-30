@@ -94,6 +94,7 @@ Device::Buffer Device::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
         if ((requirements.memoryTypeBits & (1 << i)) &&
             (physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             memoryTypeIndex = i;
+            break;
         }
     }
 
@@ -108,10 +109,11 @@ Device::Buffer Device::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage,
         ERRORF("Failed to allocate buffer memory: {}", string_VkResult(result));
     }
 
-    result = vkBindBufferMemory(m_logicalDevice, buffer.Buffer, buffer.Memory, 0);
+    vkBindBufferMemory(m_logicalDevice, buffer.Buffer, buffer.Memory, 0);
     if (result != VK_SUCCESS) {
         ERRORF("Failed to bind buffer memory: {}", string_VkResult(result));
     }
+    return buffer;
 }
 
 void Device::CreateInstance() {
@@ -379,6 +381,7 @@ Image Device::CreateImage(const VkImageCreateInfo &info, VkMemoryPropertyFlags p
         if ((requirements.memoryTypeBits & (1 << i)) &&
             (physicalDeviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
             memoryTypeIndex = i;
+            break;
         }
     }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <format>
+#define __cpp_consteval
 #include <source_location>
 #include <string_view>
 

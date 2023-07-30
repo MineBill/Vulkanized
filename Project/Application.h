@@ -3,13 +3,15 @@
 #include "Window.h"
 #include "Pipeline.h"
 #include "Swapchain.h"
-#include <memory>
 #include <vector>
+#include "Model.h"
+#include "Types.h"
 
 class Application {
     Window m_Window{600, 400, "Window"};
     Device m_device{m_Window};
-    std::unique_ptr<Pipeline> m_pipeline{};
+    Ptr<Pipeline> m_pipeline{};
+    Ptr<Model> m_model{};
     Swapchain m_swapchain{m_device};
 
     VkPipelineLayout m_pipelineLayout{};
